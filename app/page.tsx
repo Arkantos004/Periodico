@@ -111,49 +111,39 @@ export default function NewsPage() {
           )}
         </div>
 
-        {/* Right Column: Live Video - Fixed Float */}
-        <aside className="hidden md:block fixed right-4 top-28 w-80 z-40">
-          {/* Header Section */}
-          <div className="mb-4 flex items-start justify-between">
-            <div className="flex-1">
-              <h2 className="text-xl font-serif font-bold text-foreground leading-tight mb-2">
-                Noticias en Directo
-              </h2>
-              <p className="text-xs text-muted-foreground">desde la Redacción</p>
-            </div>
-            <a href="https://www.youtube.com/live/jfKfPfyJRdk" target="_blank" rel="noopener noreferrer" className="shrink-0">
-              <Badge variant="destructive" className="animate-pulse text-xs cursor-pointer hover:opacity-80 transition-opacity whitespace-nowrap ml-2">
-                <Play className="w-3 h-3 mr-1" />
-                EN VIVO
-              </Badge>
-            </a>
+        {/* Bloque de transmisión en vivo estilo imagen */}
+        <section className="w-full flex flex-col items-center mt-6">
+          <div className="flex items-center gap-3 mb-2 w-full max-w-5xl">
+            <Badge variant="destructive" className="text-sm px-4 py-1 flex items-center font-bold">
+              <Play className="w-3 h-3 mr-2" />
+              TRANSMISIÓN EN VIVO
+            </Badge>
+            <h2 className="text-2xl font-serif font-bold text-foreground">Últimas Noticias en Directo desde la Redacción</h2>
           </div>
-
-          {/* Video Section */}
-          <a href="https://www.youtube.com/live/jfKfPfyJRdk" target="_blank" rel="noopener noreferrer" className="block cursor-pointer hover:opacity-90 transition-opacity">
-            <Card className="overflow-hidden bg-card border-2 border-destructive shadow-lg">
-              <div className="aspect-video w-full bg-black">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=0`}
-                  title="YouTube Live Stream"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full pointer-events-none"
-                />
+          <div className="w-full max-w-5xl rounded-xl overflow-hidden border-2 border-destructive shadow-md bg-white">
+            <iframe
+              width="100%"
+              height="506"
+              src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=0`}
+              title="YouTube Live Stream"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-[506px]"
+              style={{ display: 'block' }}
+            ></iframe>
+            <div className="p-6">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                <Clock className="w-3 h-3" />
+                <span>{mainNews.time}</span>
+                <Badge variant="outline" className="text-xs ml-2 text-destructive border-destructive">
+                  En Vivo
+                </Badge>
               </div>
-              <div className="p-3">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                  <Clock className="w-3 h-3" />
-                  <span>{mainNews.time}</span>
-                </div>
-                <p className="text-xs text-muted-foreground line-clamp-2">{mainNews.description}</p>
-              </div>
-            </Card>
-          </a>
-        </aside>
+              <p className="text-sm text-muted-foreground">{mainNews.description}</p>
+            </div>
+          </div>
+        </section>
 
         {articles.length === 0 && (
           <div className="text-center py-12">

@@ -37,8 +37,8 @@ export default function CategoryPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* <Header /> Eliminado para evitar duplicidad */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
+      <main className="container mx-auto px-4 pt-4 pb-8">
+        <div className="mb-8 mt-8">
           <Badge variant="outline" className="mb-4">
             {getCategoryLabel(categoria)}
           </Badge>
