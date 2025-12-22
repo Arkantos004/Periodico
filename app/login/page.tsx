@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { login, register } from "@/lib/auth"
 import { useAuth } from "@/components/auth-provider"
 import Link from "next/link"
@@ -16,7 +17,9 @@ export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [name, setName] = useState("")
+  const [nombre, setNombre] = useState("")
+  const [apellido, setApellido] = useState("")
+  const [rol, setRol] = useState("lector")
   const [error, setError] = useState("")
   const router = useRouter()
   const { setUser } = useAuth()
@@ -40,11 +43,11 @@ export default function LoginPage() {
         setError("Email o contraseña incorrectos")
       }
     } else {
-      if (!name) {
-        setError("Por favor ingresa tu nombre")
+      if (!nombre || !apellido) {
+        setError("Por favor ingresa tu nombre y apellido")
         return
       }
-      const user = await register(email, password, name)
+      const user = await register(email, password, nombre, apellido, rol)
       if (user) {
         setUser(user)
         router.push("/")
@@ -59,24 +62,50 @@ export default function LoginPage() {
       <Card className="w-full max-w-md p-8">
         <div className="mb-6 text-center">
           <Link href="/">
-            <h1 className="text-3xl font-serif font-bold text-foreground mb-2">El Periódico Digital</h1>
+            <h1 className="text-3xl font-serif font-bold text-foreground mb-2">La Nota Digital</h1>
           </Link>
           <p className="text-muted-foreground">{isLogin ? "Inicia sesión" : "Crea tu cuenta"}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre</Label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Tu nombre completo"
-                required
-              />
-            </div>
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="nombre">Nombre</Label>
+                <Input
+                  id="nombre"
+                  type="text"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  placeholder="Tu nombre"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="apellido">Apellido</Label>
+                <Input
+                  id="apellido"
+                  type="text"
+                  value={apellido}
+                  onChange={(e) => setApellido(e.target.value)}
+                  placeholder="Tu apellido"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="rol">Rol</Label>
+                <Select value={rol} onValueChange={setRol}>
+                  <SelectTrigger id="rol">
+                    <SelectValue placeholder="Selecciona un rol" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lector">Lector</SelectItem>
+                    <SelectItem value="periodista">Periodista</SelectItem>
+                    <SelectItem value="administrador">Administrador</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
           )}
 
           <div className="space-y-2">
@@ -122,18 +151,6 @@ export default function LoginPage() {
             {isLogin ? "¿No tienes cuenta? Regístrate" : "¿Ya tienes cuenta? Inicia sesión"}
           </button>
         </div>
-
-        {isLogin && (
-          <div className="mt-4 p-4 bg-muted rounded-lg">
-            <p className="text-xs text-muted-foreground mb-2">Cuentas de prueba:</p>
-            <p className="text-xs">
-              <strong>Admin:</strong> admin@periodico.com / admin123
-            </p>
-            <p className="text-xs">
-              <strong>Escritor:</strong> escritor@periodico.com / escritor123
-            </p>
-          </div>
-        )}
       </Card>
     </div>
   )

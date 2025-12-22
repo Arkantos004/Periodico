@@ -29,13 +29,14 @@ export default function CategoryPage() {
       deportes: "Deportes",
       cultura: "Cultura",
     }
-    return labels[cat] || cat
+    if (labels[cat]) return labels[cat]
+    // Capitalizar la primera letra si no está en el diccionario
+    return cat.charAt(0).toUpperCase() + cat.slice(1)
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
+      {/* <Header /> Eliminado para evitar duplicidad */}
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <Badge variant="outline" className="mb-4">

@@ -101,7 +101,7 @@ function isTokenExpired(token: string): boolean {
 // API CONFIGURATION
 // ============================================================================
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+const API_URL = " https://a2f378b31447.ngrok-free.app/api"
 const PUBLIC_ROUTES = ["/login", "/register", "/"]
 
 const apiClient = axios.create({
@@ -110,7 +110,7 @@ const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
+  withCredentials: false,
 })
 
 // ============================================================================
@@ -247,15 +247,48 @@ export const login = async (
   if (typeof window === "undefined") return null
 
   try {
-    const response = await apiRequest("/auth/login", {
-      method: "POST",
-      data: { email, password },
-    })
+    // Intenta con la API si está disponible
+    try {
+      const response = await apiRequest("/auth/login", {
+        method: "POST",
+        data: { email, password },
+      })
 
-    if (response.tokens) {
-      setToken(response.tokens.accessToken, response.tokens.refreshToken)
-      localStorage.setItem(USER_KEY, JSON.stringify(response.user))
-      return response.user
+      if (response.access_token && response.usuario) {
+        setToken(response.access_token)
+        const user: User = {
+          id: response.usuario.id,
+          email: response.usuario.email,
+          name: response.usuario.nombre,
+          role: response.usuario.rol === "lector" ? "reader" : response.usuario.rol === "periodista" ? "writer" : response.usuario.rol === "administrador" ? "admin" : "reader",
+          createdAt: new Date().toISOString(),
+        }
+        localStorage.setItem(USER_KEY, JSON.stringify(user))
+        return user
+      }
+    } catch (apiError) {
+      // Si la API falla, usar datos locales
+      console.log("API unavailable, using local authentication")
+    }
+
+    // Fallback a autenticación local
+    const usersStr = localStorage.getItem("local_users")
+    const passwordsStr = localStorage.getItem("local_passwords")
+    
+    if (!usersStr || !passwordsStr) {
+      return null
+    }
+
+    const users: User[] = JSON.parse(usersStr)
+    const passwords: Record<string, string> = JSON.parse(passwordsStr)
+
+    const user = users.find((u) => u.email === email)
+    if (user && passwords[user.id] === password) {
+      // Crear un token JWT simulado para desarrollo
+      const mockToken = btoa(JSON.stringify({ id: user.id, email: user.email, role: user.role }))
+      setToken(mockToken)
+      localStorage.setItem(USER_KEY, JSON.stringify(user))
+      return user
     }
 
     return null
@@ -279,23 +312,72 @@ export const getCurrentUser = (): User | null => {
 export const register = async (
   email: string,
   password: string,
-  name: string
+  nombre: string,
+  apellido: string,
+  rol: string = "lector"
 ): Promise<User | null> => {
   if (typeof window === "undefined") return null
 
   try {
-    const response = await apiRequest("/auth/register", {
-      method: "POST",
-      data: { email, password, name },
-    })
+    // Intenta con la API si está disponible
+    try {
+      const response = await apiRequest("/auth/register", {
+        method: "POST",
+        data: { email, password, nombre, apellido, rol },
+      })
 
-    if (response.tokens) {
-      setToken(response.tokens.accessToken, response.tokens.refreshToken)
-      localStorage.setItem(USER_KEY, JSON.stringify(response.user))
-      return response.user
+      if (response.access_token && response.usuario) {
+        setToken(response.access_token)
+        const user: User = {
+          id: response.usuario.id,
+          email: response.usuario.email,
+          name: response.usuario.nombre,
+          role: response.usuario.rol === "lector" ? "reader" : response.usuario.rol === "periodista" ? "writer" : response.usuario.rol === "administrador" ? "admin" : "reader",
+          createdAt: new Date().toISOString(),
+        }
+        localStorage.setItem(USER_KEY, JSON.stringify(user))
+        return user
+      }
+    } catch (apiError) {
+      console.log("API unavailable, using local registration")
     }
 
-    return null
+    // Fallback a registro local
+    const usersStr = localStorage.getItem("local_users")
+    const passwordsStr = localStorage.getItem("local_passwords")
+
+    if (!usersStr || !passwordsStr) {
+      return null
+    }
+
+    const users: User[] = JSON.parse(usersStr)
+    const passwords: Record<string, string> = JSON.parse(passwordsStr)
+
+    // Verificar si el email ya existe
+    if (users.some((u) => u.email === email)) {
+      return null
+    }
+
+    const newUser: User = {
+      id: Date.now().toString(),
+      email,
+      name: `${nombre} ${apellido}`,
+      role: "reader",
+      createdAt: new Date().toISOString(),
+    }
+
+    users.push(newUser)
+    passwords[newUser.id] = password
+
+    localStorage.setItem("local_users", JSON.stringify(users))
+    localStorage.setItem("local_passwords", JSON.stringify(passwords))
+
+    // Crear un token JWT simulado para desarrollo
+    const mockToken = btoa(JSON.stringify({ id: newUser.id, email: newUser.email, role: newUser.role }))
+    setToken(mockToken)
+    localStorage.setItem(USER_KEY, JSON.stringify(newUser))
+
+    return newUser
   } catch (error) {
     console.error("Register error:", error)
     return null
@@ -331,12 +413,16 @@ export const refreshAccessToken = async (): Promise<string | null> => {
 // ============================================================================
 
 export const getUsers = async (): Promise<User[]> => {
+  if (typeof window === "undefined") return []
+
   try {
-    const response = await apiRequest("/users", { method: "GET" })
+    const response = await apiRequest("/usuarios", { method: "GET" })
     return response.users || []
   } catch (error) {
-    console.error("Get users error:", error)
-    return []
+    console.log("API unavailable, using local users")
+    // Fallback a datos locales
+    const usersStr = localStorage.getItem("local_users")
+    return usersStr ? JSON.parse(usersStr) : []
   }
 }
 
@@ -344,11 +430,38 @@ export const updateUserRole = async (
   userId: string,
   role: UserRole
 ): Promise<boolean> => {
+  if (typeof window === "undefined") return false
+
   try {
-    const response = await apiRequest(`/users/${userId}/role`, {
-      method: "PATCH",
-      data: { role },
-    })
+    try {
+      const response = await apiRequest(`/usuarios/${userId}`, {
+        method: "PATCH",
+        data: { role },
+      })
+
+      // Actualizar usuario actual si es el mismo
+      const currentUser = getCurrentUser()
+      if (currentUser?.id === userId) {
+        currentUser.role = role
+        localStorage.setItem(USER_KEY, JSON.stringify(currentUser))
+      }
+
+      return response.success || true
+    } catch (apiError) {
+      console.log("API unavailable, using local user update")
+    }
+
+    // Fallback a actualización local
+    const usersStr = localStorage.getItem("local_users")
+    if (!usersStr) return false
+
+    const users: User[] = JSON.parse(usersStr)
+    const userIndex = users.findIndex((u) => u.id === userId)
+
+    if (userIndex === -1) return false
+
+    users[userIndex].role = role
+    localStorage.setItem("local_users", JSON.stringify(users))
 
     // Actualizar usuario actual si es el mismo
     const currentUser = getCurrentUser()
@@ -357,7 +470,7 @@ export const updateUserRole = async (
       localStorage.setItem(USER_KEY, JSON.stringify(currentUser))
     }
 
-    return response.success || true
+    return true
   } catch (error) {
     console.error("Update user role error:", error)
     return false
@@ -365,9 +478,35 @@ export const updateUserRole = async (
 }
 
 export const deleteUser = async (userId: string): Promise<boolean> => {
+  if (typeof window === "undefined") return false
+
   try {
-    const response = await apiRequest(`/users/${userId}`, { method: "DELETE" })
-    return response.success || true
+    try {
+      const response = await apiRequest(`/usuarios/${userId}`, { method: "DELETE" })
+      return response.success || true
+    } catch (apiError) {
+      console.log("API unavailable, using local user deletion")
+    }
+
+    // Fallback a eliminación local
+    const usersStr = localStorage.getItem("local_users")
+    if (!usersStr) return false
+
+    const users: User[] = JSON.parse(usersStr)
+    const filteredUsers = users.filter((u) => u.id !== userId)
+
+    if (filteredUsers.length === users.length) return false
+
+    localStorage.setItem("local_users", JSON.stringify(filteredUsers))
+
+    const passwordsStr = localStorage.getItem("local_passwords")
+    if (passwordsStr) {
+      const passwords: Record<string, string> = JSON.parse(passwordsStr)
+      delete passwords[userId]
+      localStorage.setItem("local_passwords", JSON.stringify(passwords))
+    }
+
+    return true
   } catch (error) {
     console.error("Delete user error:", error)
     return false
@@ -379,54 +518,54 @@ export const deleteUser = async (userId: string): Promise<boolean> => {
 // ============================================================================
 
 export const getArticles = async (): Promise<Article[]> => {
+  if (typeof window === "undefined") return []
+
   try {
     const response = await apiRequest("/articles", { method: "GET" })
     return response.articles || []
   } catch (error) {
-    console.error("Get articles error:", error)
-    return []
+    console.log("API unavailable, using local articles")
+    // Fallback a datos locales
+    const articlesStr = localStorage.getItem("local_articles")
+    return articlesStr ? JSON.parse(articlesStr) : []
   }
 }
 
 export const getPublishedArticles = async (): Promise<Article[]> => {
-  try {
-    const response = await apiRequest("/articles?published=true", {
-      method: "GET",
-    })
-    return response.articles || []
-  } catch (error) {
-    console.error("Get published articles error:", error)
-    return []
-  }
+  const articles = await getArticles()
+  return articles.filter((a) => a.published)
 }
 
 export const getArticlesByCategory = async (
   category: string
 ): Promise<Article[]> => {
-  try {
-    const response = await apiRequest(`/articles?category=${category}`, {
-      method: "GET",
-    })
-    return response.articles || []
-  } catch (error) {
-    console.error("Get articles by category error:", error)
-    return []
-  }
+  const articles = await getArticles()
+  return articles
+    .filter((a) => a.category === category)
+    .filter((a) => a.published)
 }
 
 export const getArticleById = async (id: string): Promise<Article | null> => {
+  if (typeof window === "undefined") return null
+
   try {
     const response = await apiRequest(`/articles/${id}`, { method: "GET" })
     return response.article || null
   } catch (error) {
-    console.error("Get article error:", error)
-    return null
+    console.log("API unavailable, using local articles")
+    // Fallback a datos locales
+    const articlesStr = localStorage.getItem("local_articles")
+    if (!articlesStr) return null
+    const articles: Article[] = JSON.parse(articlesStr)
+    return articles.find((a) => a.id === id) || null
   }
 }
 
 export const createArticle = async (
   article: Omit<Article, "id" | "createdAt" | "updatedAt">
 ): Promise<Article | null> => {
+  if (typeof window === "undefined") return null
+
   try {
     const response = await apiRequest("/articles", {
       method: "POST",
@@ -434,8 +573,21 @@ export const createArticle = async (
     })
     return response.article || null
   } catch (error) {
-    console.error("Create article error:", error)
-    return null
+    console.log("API unavailable, using local article creation")
+    // Fallback a creación local
+    const articlesStr = localStorage.getItem("local_articles")
+    const articles: Article[] = articlesStr ? JSON.parse(articlesStr) : []
+
+    const newArticle: Article = {
+      ...article,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    articles.push(newArticle)
+    localStorage.setItem("local_articles", JSON.stringify(articles))
+    return newArticle
   }
 }
 
@@ -443,6 +595,8 @@ export const updateArticle = async (
   id: string,
   updates: Partial<Omit<Article, "id" | "createdAt">>
 ): Promise<Article | null> => {
+  if (typeof window === "undefined") return null
+
   try {
     const response = await apiRequest(`/articles/${id}`, {
       method: "PUT",
@@ -450,18 +604,46 @@ export const updateArticle = async (
     })
     return response.article || null
   } catch (error) {
-    console.error("Update article error:", error)
-    return null
+    console.log("API unavailable, using local article update")
+    // Fallback a actualización local
+    const articlesStr = localStorage.getItem("local_articles")
+    if (!articlesStr) return null
+
+    const articles: Article[] = JSON.parse(articlesStr)
+    const articleIndex = articles.findIndex((a) => a.id === id)
+
+    if (articleIndex === -1) return null
+
+    articles[articleIndex] = {
+      ...articles[articleIndex],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    }
+
+    localStorage.setItem("local_articles", JSON.stringify(articles))
+    return articles[articleIndex]
   }
 }
 
 export const deleteArticle = async (id: string): Promise<boolean> => {
+  if (typeof window === "undefined") return false
+
   try {
     const response = await apiRequest(`/articles/${id}`, { method: "DELETE" })
     return response.success || true
   } catch (error) {
-    console.error("Delete article error:", error)
-    return false
+    console.log("API unavailable, using local article deletion")
+    // Fallback a eliminación local
+    const articlesStr = localStorage.getItem("local_articles")
+    if (!articlesStr) return false
+
+    const articles: Article[] = JSON.parse(articlesStr)
+    const filteredArticles = articles.filter((a) => a.id !== id)
+
+    if (filteredArticles.length === articles.length) return false
+
+    localStorage.setItem("local_articles", JSON.stringify(filteredArticles))
+    return true
   }
 }
 
@@ -470,12 +652,16 @@ export const deleteArticle = async (id: string): Promise<boolean> => {
 // ============================================================================
 
 export const getFavorites = async (userId: string): Promise<string[]> => {
+  if (typeof window === "undefined") return []
+
   try {
     const response = await apiRequest(`/favorites/${userId}`, { method: "GET" })
     return response.favorites || []
   } catch (error) {
-    console.error("Get favorites error:", error)
-    return []
+    console.log("API unavailable, using local favorites")
+    // Fallback a favoritos locales
+    const favoritesStr = localStorage.getItem(`local_favorites_${userId}`)
+    return favoritesStr ? JSON.parse(favoritesStr) : []
   }
 }
 
@@ -483,6 +669,8 @@ export const addFavorite = async (
   userId: string,
   articleId: string
 ): Promise<boolean> => {
+  if (typeof window === "undefined") return false
+
   try {
     const response = await apiRequest(`/favorites/${userId}`, {
       method: "POST",
@@ -490,8 +678,16 @@ export const addFavorite = async (
     })
     return response.success || true
   } catch (error) {
-    console.error("Add favorite error:", error)
-    return false
+    console.log("API unavailable, using local favorite addition")
+    // Fallback a adición local
+    const favoritesStr = localStorage.getItem(`local_favorites_${userId}`)
+    const favorites: string[] = favoritesStr ? JSON.parse(favoritesStr) : []
+
+    if (favorites.includes(articleId)) return false
+
+    favorites.push(articleId)
+    localStorage.setItem(`local_favorites_${userId}`, JSON.stringify(favorites))
+    return true
   }
 }
 
@@ -499,14 +695,26 @@ export const removeFavorite = async (
   userId: string,
   articleId: string
 ): Promise<boolean> => {
+  if (typeof window === "undefined") return false
+
   try {
     const response = await apiRequest(`/favorites/${userId}/${articleId}`, {
       method: "DELETE",
     })
     return response.success || true
   } catch (error) {
-    console.error("Remove favorite error:", error)
-    return false
+    console.log("API unavailable, using local favorite removal")
+    // Fallback a remoción local
+    const favoritesStr = localStorage.getItem(`local_favorites_${userId}`)
+    if (!favoritesStr) return false
+
+    const favorites: string[] = JSON.parse(favoritesStr)
+    const filteredFavorites = favorites.filter((id) => id !== articleId)
+
+    if (filteredFavorites.length === favorites.length) return false
+
+    localStorage.setItem(`local_favorites_${userId}`, JSON.stringify(filteredFavorites))
+    return true
   }
 }
 
@@ -514,26 +722,31 @@ export const isFavorite = async (
   userId: string,
   articleId: string
 ): Promise<boolean> => {
-  try {
-    const favorites = await getFavorites(userId)
-    return favorites.includes(articleId)
-  } catch (error) {
-    console.error("Is favorite error:", error)
-    return false
-  }
+  if (typeof window === "undefined") return false
+
+  const favorites = await getFavorites(userId)
+  return favorites.includes(articleId)
 }
 
 export const getFavoriteArticles = async (
   userId: string
 ): Promise<Article[]> => {
+  if (typeof window === "undefined") return []
+
   try {
     const response = await apiRequest(`/favorites/${userId}/articles`, {
       method: "GET",
     })
     return response.articles || []
   } catch (error) {
-    console.error("Get favorite articles error:", error)
-    return []
+    console.log("API unavailable, using local favorite articles")
+    // Fallback a artículos favoritos locales
+    const favoriteIds = await getFavorites(userId)
+    const articlesStr = localStorage.getItem("local_articles")
+    if (!articlesStr) return []
+
+    const articles: Article[] = JSON.parse(articlesStr)
+    return articles.filter((article) => favoriteIds.includes(article.id) && article.published)
   }
 }
 
