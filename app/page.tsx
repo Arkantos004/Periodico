@@ -34,6 +34,8 @@ export default function NewsPage() {
       economia: "Economía",
       deportes: "Deportes",
       cultura: "Cultura",
+      tecnologia: "Tecnología",
+           
     }
     return labels[cat] || cat
   }
@@ -43,9 +45,45 @@ export default function NewsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-4 md:py-8 relative">
+      <main className="mx-auto px-4 py-4 md:py-8 relative">
+        {/* Bloque de transmisión en vivo - Centro de la pantalla */}
+        <section className="w-full flex flex-col items-center mb-12 md:mb-16">
+          <div className="flex flex-col gap-2 mb-4 w-full">
+            <Badge variant="destructive" className="text-sm px-4 py-1 flex items-center font-bold w-fit">
+              <Play className="w-3 h-3 mr-2" />
+              TRANSMISIÓN EN VIVO
+            </Badge>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-foreground leading-tight">
+              {mainNews.title}
+            </h1>
+          </div>
+          <div className="w-full max-w-7xl rounded-xl overflow-hidden border-2 border-destructive shadow-xl bg-white">
+            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+              <iframe
+                src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=0`}
+                title="YouTube Live Stream"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute top-0 left-0 w-full h-full"
+                style={{ display: 'block' }}
+              ></iframe>
+            </div>
+            <div className="p-4 md:p-6">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                <Clock className="w-3 h-3" />
+                <span>{mainNews.time}</span>
+                <Badge variant="outline" className="text-xs ml-2 text-destructive border-destructive">
+                  En Vivo
+                </Badge>
+              </div>
+              <p className="text-sm md:text-base text-muted-foreground">{mainNews.description}</p>
+            </div>
+          </div>
+        </section>
+
         {/* Featured Articles */}
-        <div>
+        <div className="container mx-auto max-w-7xl">
             {/* Featured News Grid */}
             {featuredArticles.length > 0 && (
               <section className="mb-8 md:mb-12">
@@ -110,40 +148,6 @@ export default function NewsPage() {
             </section>
           )}
         </div>
-
-        {/* Bloque de transmisión en vivo estilo imagen */}
-        <section className="w-full flex flex-col items-center mt-6">
-          <div className="flex items-center gap-3 mb-2 w-full max-w-5xl">
-            <Badge variant="destructive" className="text-sm px-4 py-1 flex items-center font-bold">
-              <Play className="w-3 h-3 mr-2" />
-              TRANSMISIÓN EN VIVO
-            </Badge>
-            <h2 className="text-2xl font-serif font-bold text-foreground">Últimas Noticias en Directo desde la Redacción</h2>
-          </div>
-          <div className="w-full max-w-5xl rounded-xl overflow-hidden border-2 border-destructive shadow-md bg-white">
-            <iframe
-              width="100%"
-              height="506"
-              src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=0`}
-              title="YouTube Live Stream"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="w-full h-[506px]"
-              style={{ display: 'block' }}
-            ></iframe>
-            <div className="p-6">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                <Clock className="w-3 h-3" />
-                <span>{mainNews.time}</span>
-                <Badge variant="outline" className="text-xs ml-2 text-destructive border-destructive">
-                  En Vivo
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">{mainNews.description}</p>
-            </div>
-          </div>
-        </section>
 
         {articles.length === 0 && (
           <div className="text-center py-12">
