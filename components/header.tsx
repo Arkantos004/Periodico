@@ -9,7 +9,7 @@ import { logout } from "@/lib/auth"
 import { useRouter, usePathname } from "next/navigation"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 
 export function Header() {
   const { user, setUser } = useAuth()
@@ -17,6 +17,26 @@ export function Header() {
   const pathname = usePathname()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const headerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false)
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    if (isDropdownOpen || isMobileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+      document.addEventListener("touchstart", handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("touchstart", handleClickOutside)
+    }
+  }, [isDropdownOpen, isMobileMenuOpen])
 
   const handleLogout = () => {
     logout()
@@ -41,7 +61,7 @@ export function Header() {
   const moreSections = sections.slice(5)
 
   return (
-    <header className="border-b border-border bg-card sticky top-0 z-50">
+    <header className="border-b border-border bg-card sticky top-0 z-50" ref={headerRef}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between gap-4 py-2 md:py-4">
           <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0">
@@ -60,13 +80,8 @@ export function Header() {
             </Button>
             
             {/* Navegación de Secciones - Desktop */}
-<<<<<<< HEAD
             <nav className="hidden lg:flex gap-4 ml-4 border-l border-border pl-4 flex-wrap">
               {sections.map((section) => {
-=======
-            <nav className="hidden lg:flex gap-4 ml-4 border-l border-border pl-4 items-center">
-              {mainSections.map((section) => {
->>>>>>> 002bd2a (Registro de Cambios - 25 de Diciembre de 2025)
                 const isActive = pathname.includes(section.href.split("/").pop() || "")
                 return (
                   <Link

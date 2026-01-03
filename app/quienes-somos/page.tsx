@@ -80,7 +80,7 @@ export default function QuienesSomosPage() {
             <h2 className="text-3xl font-serif font-bold mb-4">Nuestra Historia</h2>
             <div className="prose prose-slate max-w-none">
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Fundada en 2025, La Nota Digital nació con el objetivo de revolucionar el periodismo digital en español.
+                Fundada en 2026, La Nota Digital nació con el objetivo de revolucionar el periodismo digital en español.
                 Desde nuestros inicios, hemos apostado por la innovación tecnológica sin perder de vista lo esencial: el
                 compromiso con la verdad.
               </p>

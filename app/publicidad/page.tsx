@@ -11,7 +11,7 @@ export default function PublicidadPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <Badge className="mb-4" variant="outline">
-              MEDIA KIT 2025
+              MEDIA KIT 2026
             </Badge>
             <h1 className="text-5xl font-serif font-bold text-foreground mb-6 text-balance">
               Publicidad en La Nota Digital

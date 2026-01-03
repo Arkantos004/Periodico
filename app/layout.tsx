@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { AuthProvider } from "@/components/auth-provider"
 import { Header } from "@/components/header"
+import { AdvertisingSidebar } from "@/components/advertising-sidebar"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -44,7 +45,12 @@ export default function RootLayout({
       <body className={`font-sans antialiased`}>
         <AuthProvider>
           <Header />
-          {children}
+          <div className="flex flex-col lg:flex-row gap-6 px-4 py-4 md:py-8 max-w-7xl mx-auto">
+            <main className="flex-1">
+              {children}
+            </main>
+            <AdvertisingSidebar />
+          </div>
         </AuthProvider>
         <Analytics />
       </body>

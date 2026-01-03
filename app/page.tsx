@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Play, Clock } from "lucide-react"
+import { Play, Clock, Twitter, Facebook, Youtube, Instagram, Newspaper, Info, DollarSign, Zap, MapPin, Phone, Mail } from "lucide-react"
 import { getPublishedArticles, type Article } from "@/lib/auth"
 import Link from "next/link"
 
@@ -48,12 +48,19 @@ export default function NewsPage() {
       <main className="mx-auto px-4 py-4 md:py-8 relative">
         {/* Bloque de transmisión en vivo - Centro de la pantalla */}
         <section className="w-full flex flex-col items-center mb-12 md:mb-16">
-          <div className="flex flex-col gap-2 mb-4 w-full">
-            <Badge variant="destructive" className="text-sm px-4 py-1 flex items-center font-bold w-fit">
-              <Play className="w-3 h-3 mr-2" />
-              TRANSMISIÓN EN VIVO
-            </Badge>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-foreground leading-tight">
+          <div className="w-full mb-4">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-foreground leading-tight text-center flex items-center justify-center gap-3">
+              <a
+                href="https://www.youtube.com/live/jfKfPfyJRdk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
+                <Badge variant="destructive" className="text-sm px-3 py-1 flex items-center font-bold flex-shrink-0 cursor-pointer">
+                  <Play className="w-3 h-3 mr-1" />
+                  EN VIVO
+                </Badge>
+              </a>
               {mainNews.title}
             </h1>
           </div>
@@ -148,45 +155,6 @@ export default function NewsPage() {
             </section>
           )}
         </div>
-
-<<<<<<< HEAD
-=======
-        {/* Bloque de transmisión en vivo en el centro */}
-        <section className="mb-12">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-2 mb-6 md:mb-4">
-            <Badge variant="destructive" className="animate-pulse whitespace-nowrap">
-              <Play className="w-4 h-4 mr-1" />
-              TRANSMISIÓN EN VIVO
-            </Badge>
-            <h2 className="text-2xl md:text-3xl font-serif font-bold text-foreground">{mainNews.title}</h2>
-          </div>
-
-          <Card className="overflow-hidden bg-card border-2 border-destructive shadow-lg">
-            <div className="aspect-video w-full bg-black">
-              <iframe
-                width="100%"
-                height="100%"
-                src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=0`}
-                title="YouTube Live Stream"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="w-full h-full"
-              />
-            </div>
-            <div className="p-4 md:p-6">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                <Clock className="w-4 h-4" />
-                <span>{mainNews.time}</span>
-                <span>•</span>
-                <Badge variant="outline">{mainNews.category}</Badge>
-              </div>
-              <p className="text-muted-foreground text-sm md:text-base">{mainNews.description}</p>
-            </div>
-          </Card>
-        </section>
-
->>>>>>> 002bd2a (Registro de Cambios - 25 de Diciembre de 2025)
         {articles.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
@@ -217,51 +185,29 @@ export default function NewsPage() {
       {/* Footer */}
       <footer className="border-t border-border bg-card mt-12">
         <div className="container mx-auto px-4 py-8">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             <div>
               <h3 className="font-serif font-bold text-lg mb-4">La Nota Digital</h3>
               <p className="text-sm text-muted-foreground">Tu fuente confiable de noticias en tiempo real</p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Secciones</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="/categoria/politica" className="hover:text-foreground transition-colors">
-                    Política
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/categoria/economia" className="hover:text-foreground transition-colors">
-                    Economía
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/categoria/deportes" className="hover:text-foreground transition-colors">
-                    Deportes
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/categoria/cultura" className="hover:text-foreground transition-colors">
-                    Cultura
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
               <h4 className="font-semibold mb-4">Información</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link href="/quienes-somos" className="hover:text-foreground transition-colors">
+                  <Link href="/quienes-somos" className="hover:text-foreground transition-colors flex items-center gap-2">
+                    <Info className="w-4 h-4" />
                     Quiénes somos
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contacto" className="hover:text-foreground transition-colors">
+                  <Link href="/contacto" className="hover:text-foreground transition-colors flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
                     Contacto
                   </Link>
                 </li>
                 <li>
-                  <Link href="/publicidad" className="hover:text-foreground transition-colors">
+                  <Link href="/publicidad" className="hover:text-foreground transition-colors flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
                     Publicidad
                   </Link>
                 </li>
@@ -271,22 +217,26 @@ export default function NewsPage() {
               <h4 className="font-semibold mb-4">Síguenos</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
+                  <a href="#" className="hover:text-foreground transition-colors flex items-center gap-2">
+                    <Twitter className="w-4 h-4" />
                     Twitter
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
+                  <a href="#" className="hover:text-foreground transition-colors flex items-center gap-2">
+                    <Facebook className="w-4 h-4" />
                     Facebook
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
+                  <a href="#" className="hover:text-foreground transition-colors flex items-center gap-2">
+                    <Youtube className="w-4 h-4" />
                     YouTube
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-foreground transition-colors">
+                  <a href="https://www.instagram.com/lanotadigital.co/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors flex items-center gap-2">
+                    <Instagram className="w-4 h-4" />
                     Instagram
                   </a>
                 </li>
@@ -294,7 +244,7 @@ export default function NewsPage() {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-            <p>&copy; 2025 La Nota Digital. Todos los derechos reservados.</p>
+            <p>&copy; 2026 La Nota Digital. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
